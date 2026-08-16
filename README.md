@@ -31,6 +31,10 @@ Each of these is self-contained, dependency-free, and runs against a throwaway s
 
 Different from 01-03: this one runs against **your own real git history**, not a built scenario. It's the tool-backed version of "how often has this exact thing happened" for the specific pattern of a repair subsystem re-breaking and getting re-patched in bursts instead of fixed once — the "admin-bypass kept firing over and over again" shape. Real output from running it against Invoker's own history is in that directory's README: 322 commits over 41 days, 99% of them inside two dense bursts.
 
+## `05-historical-catalog/` — the same detectors, run against Invoker's whole history
+
+322 commits was one subsystem. Run the same tool across every major subsystem in Invoker (2026-03-10 → 2026-08-16, ~21,900 commits total) and cross-reference against the 7 incident docs already on record: 4 distinct multi-week thrash eras, the dominant one spanning ~7 weeks and touching 8+ subsystems at once — including a local session-cost pass (144 transcripts, 51 flagged as cost outliers, one independently re-derived as the same session this repo's own memory notes had already flagged for a repeated `THRASH_ALERT`). Full era-by-era breakdown, sourced against dated docs, in [`05-historical-catalog/README.md`](05-historical-catalog/). Also documents what this pass didn't cover (Codex sessions, the remote fleet) rather than silently omitting it.
+
 ## `tools/` — reusable detectors, not tied to one scenario
 
 - `claude_session_cost.py` — real, weighted per-session cost from your own Claude Code `.jsonl` transcripts, with cost outliers flagged (and an honest caveat about what an outlier does and doesn't prove — read the tools README before trusting a flag).
