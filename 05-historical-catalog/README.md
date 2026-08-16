@@ -46,18 +46,20 @@ Churn data: `.github/workflows/ci.yml` had 3 separate flagged bursts in this win
 
 ### Era 4 — 2026-06-29 → 2026-08-16 (the dominant era, still open)
 
-This is the era that actually matches "admin-bypass kept firing over and over again." Real commit counts, same ~7-week window, across subsystems that all show 88-100% of their commits landing inside flagged thrash episodes:
+This is the era that actually matches "admin-bypass kept firing over and over again." Real commit counts, same ~7-week window, across subsystems that show anywhere from a third to all of their all-time commits landing inside this one still-open window — the range varies a lot by subsystem, and that range itself is real signal (a subsystem sitting near 100% has done almost all of its work inside the thrash window; one nearer a third has more history outside it):
 
 | Subsystem | Commits in this era | % of that subsystem's all-time commits |
 |---|---|---|
 | `.github/workflows/ci.yml` | 1,171 | 85% |
-| `scripts/repro/*` | 1,863 | 80% |
-| `packages/app/src/headless*` | 875 | 52% |
+| `scripts/repro/*` | 1,523 | 65% |
+| `packages/app/src/headless*` | 565 | 33% |
 | `packages/execution-engine/src/workers/*` | 410 | 100% |
 | `scripts/test-suites/*` | 283 | 58% |
-| `scripts/mergify_admin_requeue*.py` | 319 | 99% |
-| `scripts/e2e-regression-watch*` | 128 (Aug 9-16 only, a late sub-burst) | 95% |
-| `packages/execution-engine/.../disk-headroom*` | 63 | 88% |
+| `scripts/mergify_admin_requeue*.py` | 323 | 100% |
+| `scripts/e2e-regression-watch*` | 129 (Aug 9-16 only, a late sub-burst) | 95% |
+| `packages/execution-engine/.../disk-headroom*` | 72 | 100% |
+
+*Re-verified 2026-08-16T23:55Z, single consistent snapshot.* Two of these (`scripts/repro/*`, `packages/app/src/headless*`) were corrected from this doc's first published version, which reported 1,863/80% and 875/52% — those numbers did not reproduce under direct re-run and were higher than what a growing, append-only commit history can produce later, a strong signal the original pass used a different (likely unintentionally shell-glob-expanded) path pattern than the one documented. The other six matched exactly or within one commit of small, explainable drift from new commits landing in this still-open era between the original pass and this correction — this is a live, continuously-changing repo; re-run the command below for current numbers rather than treating any of this as a fixed snapshot.
 
 `docs/incidents/2026-08-16-mergify-admin-bypass-thrash-review-followups.md` (this morning's doc) named the mechanism directly: the `mergify_admin_requeue_*.py` repair subsystem took 63 commits over 6 weeks patching the alarm, not the gate — 5 of 15 source files had no matching test file at all, and `e2e-regression-watch.test.mjs` was failing 20 of 23 tests while never wired into CI anywhere.
 
