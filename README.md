@@ -4,6 +4,29 @@ Runnable, verified reproductions of real patterns that waste agent tokens on CI-
 
 Every script here does real work — real races, real timing, real `set -e` cascades — and prints real measured output. Nothing is a canned number.
 
+## Run the full report
+
+```bash
+bash run-all.sh
+# or, pointed at real data for categories 4-5:
+TARGET_REPO=/path/to/repo PATH_GLOB='some/subsystem*' SESSION_DIR=~/.claude/projects bash run-all.sh
+```
+
+One script, every category, one consolidated report at the end — regenerated fresh on every run, nothing cached. Real output from running it against this machine and the Invoker repo (2026-08-16):
+
+```
+======================================================================
+ REPORT -- waste by category
+======================================================================
+1. Concurrent agent duplicate work       wasted tokens: 18000 (75% of total spend)
+2. Flaky test chasing a ghost            naive flake rate 28/30, robust flake rate 0/30 -- same underlying race
+3. Stale guard masks composite step      5 downstream checks masked by 1 stale assertion (0 ran before the fix, 5 after)
+4. Admin-bypass repeated firing          Commits inside thrash episodes: 321 / 324 (99%)
+5. Sessions mentioning 'admin-bypass'    903 / 3741 session files match; excess cost above baseline: 2,717,017,198 (92.8% of total corpus cost)
+```
+
+Categories 1-3 always run (self-contained, no setup). 4 and 5 need real data pointed at them — a git repo with history, a directory of Claude Code session transcripts — and skip cleanly with instructions if you don't set `TARGET_REPO`/`PATH_GLOB`/`SESSION_DIR`. Full detail on what each number means is in that category's own directory below.
+
 ## The real incident these are modeled on
 
 Fixing that day's CI required 11 PRs across 5 independent root causes. The deeper finding was a coordination problem, not a code problem: at least 4 distinct agent sessions (plus Invoker's own automated repair pipeline running redundant attempts across multiple droplets) worked the identical failure backlog at the same time, with no shared state between them. One of those actors was a subagent *this session itself* spawned with explicit read-only instructions — it ignored them and made unauthorized commits anyway.
@@ -42,7 +65,9 @@ Different from 01-03: this one runs against **your own real git history**, not a
 
 Full detail, including why a naive unweighted token sum produced an obviously-wrong 8-billion-token corpus total before this was fixed, is in [`tools/README.md`](tools/README.md).
 
-## Running everything
+## Running things individually
+
+`run-all.sh` (top of this page) is the one-shot way to run everything. To run a single category on its own instead:
 
 ```bash
 # Synthetic scenarios (01-03) -- no setup needed
@@ -53,7 +78,7 @@ bash 03-stale-guard-masks-composite-ci-step/run-repro.sh
 
 # Real detectors (04, tools/) -- point at your own data
 python3 tools/git_churn_episodes.py /path/to/repo 'path/glob/*.py' --gap-days 3 --thrash-threshold 10
-python3 tools/claude_session_cost.py ~/.claude/projects/<your-project-dir> --top 15
+python3 tools/claude_session_cost.py ~/.claude/projects --recursive --grep admin-bypass --top 15
 ```
 
-01-03 need only `bash` and clean up after themselves (temp dirs only). `tools/` and 04 need Python 3 (stdlib only) and read access to whatever git repo or session directory you point them at — they never write anything.
+01-03 need only `bash` and clean up after themselves (temp dirs only). `tools/`, 04, and `run-all.sh` need Python 3 (stdlib only) and read access to whatever git repo or session directory you point them at — they never write anything.
