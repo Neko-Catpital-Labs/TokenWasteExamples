@@ -147,6 +147,22 @@ def main():
     else:
         print("None found at this threshold.")
 
+    print()
+    print("=== Waste summary ===")
+    if outliers and median > 0:
+        excess = sum(r["weighted_cost"] - median for r in outliers)
+        print(f"Sessions analyzed:            {len(results)}")
+        print(f"Sessions flagged as outliers: {len(outliers)}  (> {args.outlier_factor}x median cost)")
+        print(f"Median session cost (baseline): {median:,.0f}")
+        print(f"Excess cost above baseline across the outliers: {excess:,.0f}  ({excess/total*100:.1f}% of total corpus cost)")
+        print()
+        print("This is NOT a claim that all outlier sessions thrashed -- a cost outlier")
+        print("is where to look, not proof of what you'll find (see README.md). It reads")
+        print("as: if every outlier had cost the same as a typical session instead, the")
+        print("corpus would be smaller by this many weighted-cost units.")
+    else:
+        print("No outliers at this threshold -- no excess-cost figure to report.")
+
 
 if __name__ == "__main__":
     main()
