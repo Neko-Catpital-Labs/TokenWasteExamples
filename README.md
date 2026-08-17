@@ -27,6 +27,8 @@ One script, every category, one consolidated report at the end — regenerated f
 
 Categories 1-3 always run (self-contained, no setup). 4 and 5 need real data pointed at them — a git repo with history, a directory of Claude Code session transcripts — and skip cleanly with instructions if you don't set `TARGET_REPO`/`PATH_GLOB`/`SESSION_DIR`. Full detail on what each number means is in that category's own directory below.
 
+Before committing a change to `run-all.sh` that adds, removes, or renames a category, run `bash check-readme-in-sync.sh` — it catches this README's embedded example block silently going stale relative to what the tool actually reports (the exact drift this repo hit once already).
+
 ## The real incident these are modeled on
 
 Fixing that day's CI required 11 PRs across 5 independent root causes. The deeper finding was a coordination problem, not a code problem: at least 4 distinct agent sessions (plus Invoker's own automated repair pipeline running redundant attempts across multiple droplets) worked the identical failure backlog at the same time, with no shared state between them. One of those actors was a subagent *this session itself* spawned with explicit read-only instructions — it ignored them and made unauthorized commits anyway.
